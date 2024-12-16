@@ -4,6 +4,8 @@ from Preprocessor.preprocessor import TextCleaner, check_and_download_nltk_resou
 from Preprocessor.vectorizer import TextVectorizer, save_to_csv
 
 if __name__ == "__main__":
+
+    """
     url = "https://pubmed.ncbi.nlm.nih.gov/?term=%28%22kidney+injury%22+OR+%22renal+toxicity%22+OR+%22nephrotoxicity%22%29+AND+%28%22drug+therapy%22+OR+medication+OR+pharmacotherapy+OR+%22nephrotoxic+drugs+»%29&filter=datesearch.y_10&filter=simsearch1.fha&filter=pubt.clinicaltrial&filter=pubt.randomizedcontrolledtrial&filter=lang.english&filter=hum_ani.humans"
 
     # Initialize scraper
@@ -34,7 +36,6 @@ if __name__ == "__main__":
 
     json_to_csv("pubmed_Cleaned.json", "pubmed_Cleaned.csv")
 
-""" 
     # Initialize Vectorizer and transform data
     vectorizer = TextVectorizer()
     bow_matrix = vectorizer.fit_transform_bow(cleaned_texts)
@@ -44,4 +45,4 @@ if __name__ == "__main__":
     save_to_csv(bow_matrix, vectorizer.vectorizer_bow.get_feature_names_out(), "BOW.csv")
     print("TF-IDF matrix shape:", tfidf_matrix.shape)
     save_to_csv(tfidf_matrix, vectorizer.vectorizer_tfidf.get_feature_names_out(), "TF-IDF.csv")
-"""
+    """
