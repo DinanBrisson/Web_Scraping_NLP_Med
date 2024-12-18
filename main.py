@@ -1,4 +1,7 @@
 import json
+
+from Classifier.biobert_labeler import BioBERTLabeler
+from Classifier.scispacy_labeler import ScispacyLabeler
 from Scraper.scraper import PubMedScraper, save_to_json, json_to_csv
 from Preprocessor.preprocessor import TextCleaner, check_and_download_nltk_resources
 from Preprocessor.vectorizer import TextVectorizer, save_to_csv
@@ -46,3 +49,23 @@ if __name__ == "__main__":
     print("TF-IDF matrix shape:", tfidf_matrix.shape)
     save_to_csv(tfidf_matrix, vectorizer.vectorizer_tfidf.get_feature_names_out(), "TF-IDF.csv")
     """
+
+    """
+    labeler = ScispacyLabeler()
+    input_file = "Data/Dataset_pubmed.csv"
+    output_file = "Labeled_Abstracts_SciSpacy.csv"
+    text_column = "Cleaned_Abstract"
+
+    labeler.load_data(input_file, text_column)
+    labeler.extract_entities()
+    labeler.save_results(output_file)
+    """
+
+    labeler = BioBERTLabeler()
+    input_file = "Data/Dataset_pubmed.csv"
+    output_file = "Labeled_Abstracts_BioBERT.csv"
+    text_column = "Cleaned_Abstract"
+
+    labeler.load_data(input_file, text_column)
+    labeler.extract_entities()
+    labeler.save_results(output_file)
