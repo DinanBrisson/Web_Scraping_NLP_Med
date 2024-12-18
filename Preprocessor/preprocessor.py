@@ -5,7 +5,7 @@ import nltk
 from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
 
-# Necessary to download nltk ressources
+# Necessary to download nltk resources
 try:
     _create_unverified_https_context = ssl._create_unverified_context
 except AttributeError:
@@ -14,6 +14,12 @@ else:
     ssl._create_default_https_context = _create_unverified_https_context
 
 def check_and_download_nltk_resources():
+    """
+    Check if NLTK resources are available locally, and download them if not.
+
+    Returns:
+    None
+    """
     nltk_paths = nltk.data.path
     nltk_data_found = False
 
@@ -27,13 +33,23 @@ def check_and_download_nltk_resources():
         print("Downloading all NLTK resources...")
         nltk.download()
 
-
-# Nltk local path
+# NLTK local path
 nltk.data.path.append('nltk_data')
 
 
 class TextCleaner:
+    """
+    A class for cleaning and preprocessing text data, including abstracts and authors.
+
+    Attributes:
+    stop_words (set): A set of English stopwords.
+    lemmatizer (WordNetLemmatizer): A lemmatizer for normalizing words.
+    contextual_stopwords_to_keep (set): A set of stopwords to retain for contextual relevance.
+    """
     def __init__(self):
+        """
+        Initialize the TextCleaner with stopwords and a lemmatizer.
+        """
         self.stop_words = set(stopwords.words('english'))
         self.lemmatizer = WordNetLemmatizer()
 
@@ -41,6 +57,15 @@ class TextCleaner:
         self.contextual_stopwords_to_keep = {'with', 'of', 'to', 'in', 'and', 'or', 'not', 'no'}
 
     def clean_text(self, text):
+        """
+        Clean and preprocess text data.
+
+        Parameters:
+        text (str): The raw text to clean.
+
+        Returns:
+        list: A list of cleaned and lemmatized tokens.
+        """
         # Remove HTML tags
         text = re.sub(r'<[^>]+>', '', text)
 
@@ -67,10 +92,16 @@ class TextCleaner:
 
         return tokens
 
-        # Rejoin cleaned sentence
-        # return ' '.join(tokens)
-
     def clean_authors(self, authors):
+        """
+        Clean and format the authors field.
+
+        Parameters:
+        authors (str): The raw authors string.
+
+        Returns:
+        str: A cleaned and formatted string of unique authors.
+        """
         if not isinstance(authors, str):
             return "No authors available"
 
@@ -91,7 +122,15 @@ class TextCleaner:
         return ', '.join(unique_authors)
 
     def preprocess(self, articles_data):
-        # Process each article and retain all metadata with the cleaned abstract
+        """
+        Preprocess a list of articles by cleaning abstracts and authors.
+
+        Parameters:
+        articles_data (list): A list of dictionaries, where each dictionary represents an article.
+
+        Returns:
+        list: A list of dictionaries with cleaned text and metadata.
+        """
         cleaned_articles = []
         for article in articles_data:
             # Clean the abstract
