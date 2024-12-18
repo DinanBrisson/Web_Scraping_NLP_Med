@@ -1,7 +1,7 @@
 import json
 
-from Classifier.biobert_labeler import BioBERTLabeler
-from Classifier.scispacy_labeler import ScispacyLabeler
+from Labeler.biobert_labeler import BioBERTLabeler
+from Labeler.scispacy_labeler import ScispacyLabeler
 from Scraper.scraper import PubMedScraper, save_to_json, json_to_csv
 from Preprocessor.preprocessor import TextCleaner, check_and_download_nltk_resources
 from Preprocessor.vectorizer import TextVectorizer, save_to_csv
