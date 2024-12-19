@@ -58,18 +58,14 @@ if __name__ == "__main__":
     labeler = ScispacyLabeler()
     input_file = "Data/pubmed_Cleaned.csv"
     output_file = "Labeled_Abstracts_SciSpacy.csv"
-
     labeler.load_data(input_file)
     labeler.extract_entities()
     labeler.save_results(output_file)
 
-    """
-    # Entity recognition with BioBERT
+    """# Entity recognition with BioBERT
     labeler = BioBERTLabeler()
     input_file = "Data/pubmed_Cleaned.csv"
     output_file = "Labeled_Abstracts_BioBERT.csv"
-
-    labeler.load_data(input_file)
+    labeler.load_data(input_file, text_column="Original_Abstract")
     labeler.extract_entities()
-    labeler.save_results(output_file)
-    """
+    labeler.save_results(output_file)"""

@@ -4,9 +4,16 @@ from transformers import pipeline, AutoTokenizer, AutoModelForTokenClassificatio
 class BioBERTLabeler:
     def __init__(self):
         print("[INFO] Initializing BioBERT model for Named Entity Recognition...")
-        # Load the tokenizer and model explicitly
+
+        # Load BioBERT
         self.tokenizer = AutoTokenizer.from_pretrained("dmis-lab/biobert-base-cased-v1.1")
         self.model = AutoModelForTokenClassification.from_pretrained("dmis-lab/biobert-base-cased-v1.1")
+
+        """
+        # Load PubMedBERT
+        self.tokenizer = AutoTokenizer.from_pretrained("microsoft/BiomedNLP-PubMedBERT-base-uncased-abstract")
+        self.model = AutoModelForTokenClassification.from_pretrained("microsoft/BiomedNLP-PubMedBERT-base-uncased-abstract")
+        """
 
         # Initialize the pipeline
         self.ner_pipeline = pipeline(
