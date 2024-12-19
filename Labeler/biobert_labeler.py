@@ -44,7 +44,7 @@ class BioBERTLabeler:
             return ", ".join(entities)  # Return as a comma-separated string
 
         # Apply BioBERT extraction
-        self.data["Labels_BioBERT"] = self.data["Text"].apply(extract_with_biobert)
+        self.data["Labels"] = self.data["Text"].apply(extract_with_biobert)
         print("[INFO] BioBERT entity extraction complete.")
 
     def save_results(self, output_file):

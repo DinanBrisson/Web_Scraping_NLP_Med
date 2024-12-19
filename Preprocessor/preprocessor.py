@@ -90,7 +90,7 @@ class TextCleaner:
         # Lemmatization
         tokens = [self.lemmatizer.lemmatize(word) for word in tokens]
 
-        return tokens
+        return text
 
     def clean_authors(self, authors):
         """
@@ -123,22 +123,18 @@ class TextCleaner:
 
     def preprocess(self, articles_data):
         """
-        Preprocess a list of articles by cleaning abstracts and authors.
+        Preprocess a list of articles, cleaning authors while keeping the original text.
 
         Parameters:
         articles_data (list): A list of dictionaries, where each dictionary represents an article.
 
         Returns:
-        list: A list of dictionaries with cleaned text and metadata.
+        list: A list of dictionaries with original text and cleaned metadata.
         """
         cleaned_articles = []
         for article in articles_data:
-            # Clean the abstract
+            # Keep the original abstract
             abstract = article.get("Abstract", "")
-            if isinstance(abstract, str):  # Ensure abstract is a string
-                cleaned_text = self.clean_text(abstract)
-            else:
-                cleaned_text = "Not available"
 
             # Clean authors field
             authors = article.get("Authors", "")
@@ -151,8 +147,9 @@ class TextCleaner:
                 "Journal": article.get("Journal"),
                 "URL": article.get("URL"),
                 "Keywords": article.get("Keywords"),
-                "Cleaned_Abstract": cleaned_text
+                "Original_Abstract": abstract
             }
             cleaned_articles.append(cleaned_article)
 
         return cleaned_articles
+

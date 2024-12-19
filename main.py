@@ -22,8 +22,10 @@ if __name__ == "__main__":
 
     # Check and download if necessary
     check_and_download_nltk_resources()
+    """
 
-    # Load JSON data
+    """
+    Load JSON data
     with open("pubmed_scrap.json", "r", encoding="utf-8") as file:
         articles_data = json.load(file)
 
@@ -31,14 +33,16 @@ if __name__ == "__main__":
     preprocessor = TextCleaner()
     cleaned_data = preprocessor.preprocess(articles_data)
 
-    cleaned_texts = [article["Cleaned_Abstract"] for article in cleaned_data]
+    cleaned_texts = [article["Original_Abstract"] for article in cleaned_data]
 
     save_to_json(cleaned_texts, "Cleaned_Abstracts.json")
 
     save_to_json(cleaned_data, "pubmed_Cleaned.json")
 
     json_to_csv("pubmed_Cleaned.json", "pubmed_Cleaned.csv")
+    """
 
+    """
     # Initialize Vectorizer and transform data
     vectorizer = TextVectorizer()
     bow_matrix = vectorizer.fit_transform_bow(cleaned_texts)
@@ -51,20 +55,22 @@ if __name__ == "__main__":
     """
 
     """
+    # Entity recognition with SciSpacy
     labeler = ScispacyLabeler()
-    input_file = "Data/Dataset_pubmed.csv"
+    input_file = "pubmed_Cleaned.csv"
     output_file = "Labeled_Abstracts_SciSpacy.csv"
-    text_column = "Cleaned_Abstract"
+    text_column = "Original_Abstract"
 
     labeler.load_data(input_file, text_column)
     labeler.extract_entities()
     labeler.save_results(output_file)
     """
 
+    # Entity recognition with BioBERT
     labeler = BioBERTLabeler()
-    input_file = "Data/Dataset_pubmed.csv"
+    input_file = "Data/pubmed_Cleaned.csv"
     output_file = "Labeled_Abstracts_BioBERT.csv"
-    text_column = "Cleaned_Abstract"
+    text_column = "Original_Abstract"
 
     labeler.load_data(input_file, text_column)
     labeler.extract_entities()
