@@ -21,7 +21,7 @@ class BioBERTLabeler:
         print("[INFO] Loading data from CSV file...")
         self.data = pd.read_csv(file_path)  # Load the CSV file
         self.data = self.data.dropna(subset=[text_column])  # Remove rows with missing text
-        self.data["Text"] = self.data[text_column]  # Assign the column to process
+        self.text_column = text_column  # Store the column name for future reference
         print(f"[INFO] Loaded {len(self.data)} rows.")
 
     def extract_entities(self):
@@ -43,8 +43,8 @@ class BioBERTLabeler:
             entities = set([result['word'] for result in results])  # Eliminate duplicates
             return ", ".join(entities)  # Return as a comma-separated string
 
-        # Apply BioBERT extraction
-        self.data["Labels"] = self.data["Text"].apply(extract_with_biobert)
+        # Apply BioBERT extraction directly on the specified column
+        self.data["Labels"] = self.data[self.text_column].apply(extract_with_biobert)
         print("[INFO] BioBERT entity extraction complete.")
 
     def save_results(self, output_file):

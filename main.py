@@ -54,24 +54,22 @@ if __name__ == "__main__":
     save_to_csv(tfidf_matrix, vectorizer.vectorizer_tfidf.get_feature_names_out(), "TF-IDF.csv")
     """
 
-    """
     # Entity recognition with SciSpacy
     labeler = ScispacyLabeler()
-    input_file = "pubmed_Cleaned.csv"
+    input_file = "Data/pubmed_Cleaned.csv"
     output_file = "Labeled_Abstracts_SciSpacy.csv"
-    text_column = "Original_Abstract"
 
-    labeler.load_data(input_file, text_column)
+    labeler.load_data(input_file)
     labeler.extract_entities()
     labeler.save_results(output_file)
-    """
 
+    """
     # Entity recognition with BioBERT
     labeler = BioBERTLabeler()
     input_file = "Data/pubmed_Cleaned.csv"
     output_file = "Labeled_Abstracts_BioBERT.csv"
-    text_column = "Original_Abstract"
 
-    labeler.load_data(input_file, text_column)
+    labeler.load_data(input_file)
     labeler.extract_entities()
     labeler.save_results(output_file)
+    """
