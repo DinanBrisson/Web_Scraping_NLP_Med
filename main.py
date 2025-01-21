@@ -1,10 +1,16 @@
 import json
 
-from Labeler.biobert_labeler import BioBERTLabeler
-from Labeler.scispacy_labeler import ScispacyLabeler
+import pandas as pd
+import time
+
+from Ranker.encoder import EncodeAbstracts
+from Ranker.ranker import ArticleRanker
 from Scraper.scraper import PubMedScraper, save_to_json, json_to_csv
 from Preprocessor.preprocessor import TextCleaner, check_and_download_nltk_resources
 from Preprocessor.vectorizer import TextVectorizer, save_to_csv
+from Labeler.biobert_labeler import BioBERTLabeler
+from Labeler.scispacy_labeler import ScispacyLabeler
+from Filter.filter import SpacyFilter
 
 if __name__ == "__main__":
 
@@ -54,6 +60,7 @@ if __name__ == "__main__":
     save_to_csv(tfidf_matrix, vectorizer.vectorizer_tfidf.get_feature_names_out(), "TF-IDF.csv")
     """
 
+    """
     # Entity recognition with SciSpacy
     labeler = ScispacyLabeler()
     input_file = "Data/pubmed_Cleaned.csv"
@@ -61,6 +68,7 @@ if __name__ == "__main__":
     labeler.load_data(input_file)
     labeler.extract_entities()
     labeler.save_results(output_file)
+    """
 
     """# Entity recognition with BioBERT
     labeler = BioBERTLabeler()
@@ -69,3 +77,27 @@ if __name__ == "__main__":
     labeler.load_data(input_file, text_column="Original_Abstract")
     labeler.extract_entities()
     labeler.save_results(output_file)"""
+
+    """# Initialize Filter
+    filter_spacy = SpacyFilter(similarity_threshold=0.8)
+
+    input_file = "Labeled_Abstracts_SciSpacy.csv"
+    filter_spacy.load_data(input_file)
+
+    # Get user input
+    user_input = filter_spacy.get_user_input()
+
+    # Apply Filter
+    filtered_data = filter_spacy.pre_filter(user_input)
+
+    # Save results
+    output_file = "Filtered_Abstracts.csv"
+    filter_spacy.save_results(filtered_data, output_file)"""
+
+    """preprocessor = EncodeAbstracts()
+    preprocessor.encode_and_save()"""
+
+    # Rank articles
+    ranker = ArticleRanker()
+    ranker.run()
+
