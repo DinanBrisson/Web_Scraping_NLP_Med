@@ -42,7 +42,6 @@ class ScispacyLabeler:
         """
         print("[INFO] Loading data from the CSV file...")
         self.data = pd.read_csv(file_path)  # Load the CSV file
-        self.data = self.data.dropna(subset=["Original_Abstract"])  # Remove rows with missing text
         print(f"[INFO] Data loaded with {len(self.data)} rows.")
 
     def extract_entities(self):
@@ -70,7 +69,7 @@ class ScispacyLabeler:
             entities = {ent.text for ent in doc.ents}  # Use a set to avoid duplicates
             return ", ".join(sorted(entities))  # Return entities as a comma-separated string
 
-        self.data["Labels"] = self.data["Original_Abstract"].apply(process_text)
+        self.data["Labels"] = self.data["abstract"].apply(process_text)
         print("[INFO] Entity extraction and labeling complete.")
 
     def save_results(self, output_file):
