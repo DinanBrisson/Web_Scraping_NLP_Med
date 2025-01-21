@@ -2,6 +2,7 @@ import json
 import pandas as pd
 from Ranker.encoder import EncodeAbstracts
 from Ranker.ranker import ArticleRanker
+from Scraper.impact_factor_scraper import JournalImpactFactorScraper
 from Scraper.scraper import PubMedScraper, save_to_json, json_to_csv
 from Preprocessor.preprocessor import TextCleaner, check_and_download_nltk_resources
 from Preprocessor.vectorizer import TextVectorizer, save_to_csv
@@ -57,21 +58,19 @@ if __name__ == "__main__":
     save_to_csv(tfidf_matrix, vectorizer.vectorizer_tfidf.get_feature_names_out(), "TF-IDF.csv")
     """
 
-    """
-    # Entity recognition with SciSpacy
+    """# Entity recognition with SciSpacy
     labeler = ScispacyLabeler()
-    input_file = "Data/pubmed_Cleaned.csv"
-    output_file = "Labeled_Abstracts_SciSpacy.csv"
+    input_file = "ranked_articles.csv"
+    output_file = "Labeled_Ranked_Abstracts_SciSpacy.csv"
     labeler.load_data(input_file)
     labeler.extract_entities()
-    labeler.save_results(output_file)
-    """
+    labeler.save_results(output_file)"""
 
     """# Entity recognition with BioBERT
     labeler = BioBERTLabeler()
-    input_file = "Data/pubmed_Cleaned.csv"
-    output_file = "Labeled_Abstracts_BioBERT.csv"
-    labeler.load_data(input_file, text_column="Original_Abstract")
+    input_file = "ranked_articles.csv"
+    output_file = "Labeled_Ranked_Abstracts_BioBERT.csv"
+    labeler.load_data(input_file, text_column="abstract")
     labeler.extract_entities()
     labeler.save_results(output_file)"""
 
@@ -95,7 +94,9 @@ if __name__ == "__main__":
     preprocessor = EncodeAbstracts()
     preprocessor.encode_and_save()"""
 
+    """scraper = JournalImpactFactorScraper(delay=1)
+    scraper.run()"""
+
     # Rank articles
     ranker = ArticleRanker()
     ranker.run()
-
