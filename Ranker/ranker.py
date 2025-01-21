@@ -1,8 +1,6 @@
 import torch
 import pandas as pd
-from transformers import AutoTokenizer
 from sentence_transformers import SentenceTransformer, models, util
-
 
 class ArticleRanker:
     """
@@ -32,7 +30,8 @@ class ArticleRanker:
         self.load_articles()
         self.load_precomputed_embeddings()
 
-    def load_biobert(self, model_name):
+    @staticmethod
+    def load_biobert(model_name):
         """
         Loads the BioBERT model in a SentenceTransformer-compatible format.
         """
@@ -103,7 +102,8 @@ class ArticleRanker:
 
         return ranked_articles
 
-    def save_results_to_csv(self, ranked_articles, filename="ranked_articles.csv"):
+    @staticmethod
+    def save_results_to_csv(ranked_articles, filename="ranked_articles.csv"):
         """
         Saves the ranked articles to a CSV file.
         """

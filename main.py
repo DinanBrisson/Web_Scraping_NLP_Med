@@ -1,8 +1,5 @@
 import json
-
 import pandas as pd
-import time
-
 from Ranker.encoder import EncodeAbstracts
 from Ranker.ranker import ArticleRanker
 from Scraper.scraper import PubMedScraper, save_to_json, json_to_csv
@@ -94,7 +91,8 @@ if __name__ == "__main__":
     output_file = "Filtered_Abstracts.csv"
     filter_spacy.save_results(filtered_data, output_file)"""
 
-    """preprocessor = EncodeAbstracts()
+    """# Encoding abstracts
+    preprocessor = EncodeAbstracts()
     preprocessor.encode_and_save()"""
 
     # Rank articles
