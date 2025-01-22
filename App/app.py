@@ -33,7 +33,6 @@ class MedicalArticleSearchApp:
     @staticmethod
     def save_results_to_csv(ranked_articles, filename):
         """Save ranked articles to a CSV file."""
-        os.makedirs("Data", exist_ok=True)  # Ensure Data directory exists
         df = pd.DataFrame(ranked_articles)
         df.to_csv(filename, index=False)
         print(f"\n[INFO] Results saved to {filename}")
@@ -78,7 +77,7 @@ class MedicalArticleSearchApp:
                     print("-" * 80)
 
                 # Save results to CSV with query-based filename
-                csv_filename = f"Data/ranked_articles_{cleaned_query}.csv"
+                csv_filename = f"ranked_articles_{cleaned_query}.csv"
                 self.save_results_to_csv(ranked_articles, csv_filename)
 
                 # Display articles in Streamlit
