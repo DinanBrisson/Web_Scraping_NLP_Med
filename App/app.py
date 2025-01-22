@@ -33,6 +33,7 @@ class MedicalArticleSearchApp:
     @staticmethod
     def save_results_to_csv(ranked_articles, filename):
         """Save ranked articles to a CSV file."""
+        os.makedirs("Data", exist_ok=True)  # Ensure Data directory exists
         df = pd.DataFrame(ranked_articles)
         df.to_csv(filename, index=False)
         print(f"\n[INFO] Results saved to {filename}")
@@ -68,6 +69,7 @@ class MedicalArticleSearchApp:
             ranked_articles = self.ranker.rank_articles(translated_query)
 
             if ranked_articles:
+                # Print results to console
                 print("\n[INFO] Top 10 Ranked Articles:\n")
                 for i, article in enumerate(ranked_articles):
                     print(f"[{i + 1}] Title: {article['title']}")
@@ -77,13 +79,14 @@ class MedicalArticleSearchApp:
                     print("-" * 80)
 
                 # Save results to CSV with query-based filename
-                csv_filename = f"ranked_articles_{cleaned_query}.csv"
+                csv_filename = f"Data/ranked_articles_{cleaned_query}.csv"
                 self.save_results_to_csv(ranked_articles, csv_filename)
 
                 # Display articles in Streamlit
                 for article in ranked_articles:
                     st.subheader(article["title"])
                     st.write(f"**Journal**: {article['journal']}")
+                    st.write(f"**Similarity score**: {article['score']}")
                     st.write(f"**[Read More]({article['url']})**")
                     st.write("---")
 
@@ -97,7 +100,7 @@ class MedicalArticleSearchApp:
                 )
 
             else:
-                st.warning("No matching articles found.")
+                st.warning("No matching articles found, please retry with other term")
 
 
 if __name__ == "__main__":
