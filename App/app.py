@@ -100,7 +100,7 @@ class MedicalArticleSearchApp:
                 )
 
             else:
-                st.warning("No matching articles found, please retry with other term")
+                st.warning("No matching articles found, please retry with an other term")
 
 
 if __name__ == "__main__":
