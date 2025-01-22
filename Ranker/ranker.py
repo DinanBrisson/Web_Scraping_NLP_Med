@@ -1,6 +1,29 @@
 import torch
+import asyncio
 import pandas as pd
 from sentence_transformers import SentenceTransformer, models, util
+from googletrans import Translator
+
+
+def translate_to_english(word):
+    """
+    Translates a word to English using Google Translate in a synchronous way.
+
+    :param word: The input word to be translated.
+    :return: The translated word in English if applicable, otherwise the original word.
+    """
+    translator = Translator()
+
+    async def async_translate():
+        try:
+            translated = await translator.translate(word, src="fr", dest="en")
+            return translated.text
+        except Exception as e:
+            print(f"[WARNING] Translation failed: {e}")
+            return word  # Return original word if translation fails
+
+    return asyncio.run(async_translate())
+
 
 class ArticleRanker:
     """
@@ -116,7 +139,12 @@ class ArticleRanker:
         Runs the user interaction: prompts the user for a search term, ranks articles, and saves the results.
         """
         user_input = input("Enter a search term: ")
-        ranked_articles = self.rank_articles(user_input)
+
+        # Traduire le mot en anglais si nécessaire
+        translated_query = translate_to_english(user_input)
+        print(f"[INFO] Using translated query: {translated_query}")
+
+        ranked_articles = self.rank_articles(translated_query)
 
         if ranked_articles:
             print("\n[INFO] Top 10 Ranked Articles:\n")
@@ -124,7 +152,7 @@ class ArticleRanker:
                 print(f"[{i + 1}] Title: {article['title']}")
                 print(f"    Journal: {article.get('journal')}")
                 print(f"    URL: {article['url']}")
-                print(f"    Score: {article['score']:.4f}")
+                print(f"    Score: {article['score']}")
                 print("-" * 80)
             self.save_results_to_csv(ranked_articles)
         else:
