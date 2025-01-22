@@ -86,7 +86,7 @@ class MedicalArticleSearchApp:
                     st.subheader(article["title"])
                     st.write(f"**Journal**: {article['journal']}")
                     st.write(f"**Similarity score**: {article['score']}")
-                    st.write(f"**[Read More]({article['url']})**")
+                    st.write(f"**Article link: {article['url']}**")
                     st.write("---")
 
                 # Convert data to CSV and add a download button with query name
