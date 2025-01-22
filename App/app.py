@@ -2,7 +2,7 @@ import streamlit as st
 import sys
 import os
 import pandas as pd
-import re  # To clean file names
+import re
 
 # Add project root to Python path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
