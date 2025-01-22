@@ -69,7 +69,6 @@ class MedicalArticleSearchApp:
             ranked_articles = self.ranker.rank_articles(translated_query)
 
             if ranked_articles:
-                # Print results to console
                 print("\n[INFO] Top 10 Ranked Articles:\n")
                 for i, article in enumerate(ranked_articles):
                     print(f"[{i + 1}] Title: {article['title']}")
