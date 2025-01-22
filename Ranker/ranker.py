@@ -103,7 +103,6 @@ class ArticleRanker:
         # Sort articles by similarity score in descending order
         sorted_indices = torch.argsort(similarities, descending=True)
 
-        # List of renal-related keywords
         renal_keywords = [
             # Renal diseases and pathologies
             "acute kidney injury", "AKI", "chronic kidney disease", "CKD",
