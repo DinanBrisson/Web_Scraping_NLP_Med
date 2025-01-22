@@ -1,28 +1,21 @@
 import torch
-import asyncio
 import pandas as pd
 from sentence_transformers import SentenceTransformer, models, util
-from googletrans import Translator
-
+from deep_translator import GoogleTranslator
 
 def translate_to_english(word):
     """
-    Translates a word to English using Google Translate in a synchronous way.
+    Translates a word to English using Deep Translator with automatic language detection.
 
     :param word: The input word to be translated.
     :return: The translated word in English if applicable, otherwise the original word.
     """
-    translator = Translator()
-
-    async def async_translate():
-        try:
-            translated = await translator.translate(word, src="fr", dest="en")
-            return translated.text
-        except Exception as e:
-            print(f"[WARNING] Translation failed: {e}")
-            return word  # Return original word if translation fails
-
-    return asyncio.run(async_translate())
+    try:
+        translated = GoogleTranslator(target="en").translate(word)  # Auto-detect language
+        return translated
+    except Exception as e:
+        print(f"[WARNING] Translation failed: {e}")
+        return word  # Return original word if translation fails
 
 
 class ArticleRanker:
@@ -49,7 +42,7 @@ class ArticleRanker:
         print("[INFO] Loading BioBERT model...")
         self.model = self.load_biobert(model_name)
 
-        # Load articles and Precomputed embeddings
+        # Load articles and precomputed embeddings
         self.load_articles()
         self.load_precomputed_embeddings()
 
@@ -89,11 +82,11 @@ class ArticleRanker:
             print("[ERROR] No precomputed embeddings found")
             exit()
 
-    def rank_articles(self, user_input, top_n=10):
+    def rank_articles(self, translated_query, top_n=10):
         """
-        Ranks articles based on their relevance to the given input term.
+        Ranks articles based on their relevance to the given input term and kidney-related topics.
 
-        :param user_input: Search term or phrase provided by the user.
+        :param translated_query: Search term already translated to English.
         :param top_n: Number of top-ranked articles to return.
         :return: List of top-ranked articles sorted by similarity score.
         """
@@ -101,27 +94,60 @@ class ArticleRanker:
             print("[INFO] No articles or embeddings available for analysis.")
             return []
 
-        # Encode the user input
         print("\n[INFO] Encoding user query...")
-        query_embedding = self.model.encode(user_input, convert_to_tensor=True, device=self.device)
+        query_embedding = self.model.encode(translated_query, convert_to_tensor=True, device=self.device)
 
-        # Compute cosine similarity with precomputed embeddings
         print("[INFO] Calculating similarity scores...")
         similarities = util.pytorch_cos_sim(query_embedding, self.embeddings)
 
         # Sort articles by similarity score in descending order
         sorted_indices = torch.argsort(similarities, descending=True)
 
-        # Retrieve the top-ranked articles
+        # List of renal-related keywords
+        renal_keywords = [
+            # Renal diseases and pathologies
+            "acute kidney injury", "AKI", "chronic kidney disease", "CKD",
+            "end-stage renal disease", "ESRD", "nephrotic syndrome", "nephritis",
+            "glomerulonephritis", "interstitial nephritis", "pyelonephritis",
+            "diabetic nephropathy", "hypertensive nephropathy", "lupus nephritis",
+            "focal segmental glomerulosclerosis", "FSGS", "polycystic kidney disease",
+            "PKD", "renal cell carcinoma", "RCC", "urolithiasis", "nephrolithiasis",
+            "kidney stones", "urinary tract infection", "UTI",
+
+            # Symptoms and complications
+            "proteinuria", "hematuria", "albuminuria", "oliguria", "anuria",
+            "azotemia", "hyperkalemia", "metabolic acidosis", "fluid overload",
+            "electrolyte imbalance", "uremia", "hypertension", "nephrogenic diabetes insipidus",
+
+            # Renal failure and treatments
+            "renal insufficiency", "dialysis", "hemodialysis", "peritoneal dialysis",
+            "continuous renal replacement therapy", "CRRT", "kidney transplant",
+            "renal replacement therapy", "RRT", "nephrotoxicity", "drug-induced nephrotoxicity",
+            "contrast-induced nephropathy", "CIN", "acute tubular necrosis", "ATN",
+
+            # General renal-related medical terms
+            "renal failure", "kidney dysfunction", "glomerular filtration rate",
+            "GFR", "creatinine clearance", "eGFR", "blood urea nitrogen", "BUN",
+            "hydronephrosis", "hyperphosphatemia", "hypocalcemia", "hypercalcemia",
+            "hypomagnesemia", "renal osteodystrophy"
+        ]
+
         ranked_articles = []
-        for idx in sorted_indices[0][:top_n]:
-            ranked_articles.append({
-                "title": self.articles[idx]["title"],
-                "abstract": self.articles[idx]["abstract"],
-                "journal": self.articles[idx]["journal"],
-                "url": self.articles[idx]["url"],
-                "score": similarities[0, idx].item()
-            })
+        for idx in sorted_indices[0]:
+            article = self.articles[idx]
+            abstract = article["abstract"].lower()
+
+            if translated_query.lower() in abstract and any(keyword in abstract for keyword in renal_keywords):
+                ranked_articles.append({
+                    "title": article["title"],
+                    "abstract": article["abstract"],
+                    "journal": article["journal"],
+                    "url": article["url"],
+                    "score": similarities[0, idx].item()
+                })
+
+            if len(ranked_articles) >= top_n:
+                break
 
         return ranked_articles
 
@@ -140,7 +166,7 @@ class ArticleRanker:
         """
         user_input = input("Enter a search term: ")
 
-        # Traduire le mot en anglais si nécessaire
+        # Translate query to English once
         translated_query = translate_to_english(user_input)
         print(f"[INFO] Using translated query: {translated_query}")
 
