@@ -108,24 +108,41 @@ class ArticleRanker:
             "diabetic nephropathy", "hypertensive nephropathy", "lupus nephritis",
             "focal segmental glomerulosclerosis", "FSGS", "polycystic kidney disease",
             "PKD", "renal cell carcinoma", "RCC", "urolithiasis", "nephrolithiasis",
-            "kidney stones", "urinary tract infection", "UTI",
+            "kidney stones", "urinary tract infection", "UTI", "nephrolithiasis",
+            "medullary cystic kidney disease", "IgA nephropathy", "membranous nephropathy",
+            "thrombotic microangiopathy", "amyloidosis", "Alport syndrome", "Fabry disease",
 
             # Symptoms and complications
             "proteinuria", "hematuria", "albuminuria", "oliguria", "anuria",
-            "azotemia", "hyperkalemia", "metabolic acidosis", "fluid overload",
-            "electrolyte imbalance", "uremia", "hypertension", "nephrogenic diabetes insipidus",
+            "azotemia", "hyperkalemia", "hypokalemia", "hypernatremia", "hyponatremia",
+            "metabolic acidosis", "respiratory acidosis", "respiratory alkalosis",
+            "fluid overload", "electrolyte imbalance", "uremia", "hypertension",
+            "nephrogenic diabetes insipidus", "hypoalbuminemia", "hyperphosphatemia",
+            "hypophosphatemia", "hypocalcemia", "hypercalcemia", "hypomagnesemia",
+            "hypermagnesemia", "hyperparathyroidism", "osteodystrophy", "anemia of CKD",
 
             # Renal failure and treatments
-            "renal insufficiency", "dialysis", "hemodialysis", "peritoneal dialysis",
-            "continuous renal replacement therapy", "CRRT", "kidney transplant",
-            "renal replacement therapy", "RRT", "nephrotoxicity", "drug-induced nephrotoxicity",
-            "contrast-induced nephropathy", "CIN", "acute tubular necrosis", "ATN",
+            "renal insufficiency", "acute renal failure", "chronic renal failure",
+            "dialysis", "hemodialysis", "peritoneal dialysis", "continuous renal replacement therapy",
+            "CRRT", "extracorporeal dialysis", "kidney transplant", "renal replacement therapy",
+            "RRT", "transplant rejection", "immunosuppressive therapy", "plasma exchange",
+            "glomerular hyperfiltration", "refractory nephrotic syndrome", "steroid-resistant nephrotic syndrome",
+
+            # Nephrotoxicity and drug-induced kidney injuries
+            "nephrotoxicity", "drug-induced nephrotoxicity", "contrast-induced nephropathy",
+            "CIN", "NSAID-induced nephropathy", "aminoglycoside nephrotoxicity",
+            "vancomycin nephrotoxicity", "ACE inhibitor nephrotoxicity",
+            "cisplatin nephrotoxicity", "radiocontrast nephropathy",
+            "acute tubular necrosis", "ATN", "ischemic nephropathy",
+            "cyclosporine nephrotoxicity", "tacrolimus nephrotoxicity",
 
             # General renal-related medical terms
             "renal failure", "kidney dysfunction", "glomerular filtration rate",
             "GFR", "creatinine clearance", "eGFR", "blood urea nitrogen", "BUN",
             "hydronephrosis", "hyperphosphatemia", "hypocalcemia", "hypercalcemia",
-            "hypomagnesemia", "renal osteodystrophy"
+            "hypomagnesemia", "renal osteodystrophy", "nephritic syndrome",
+            "nephrotic syndrome", "nephrocalcinosis", "renal fibrosis",
+            "glomerular hypertrophy", "tubulointerstitial nephritis"
         ]
 
         ranked_articles = []
