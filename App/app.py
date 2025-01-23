@@ -11,7 +11,7 @@ from Ranker.ranker import ArticleRanker
 from deep_translator import GoogleTranslator
 
 
-class MedicalArticleSearchApp:
+class App:
     def __init__(self):
         """Initialize the ranking model."""
         self.ranker = ArticleRanker()
@@ -31,17 +31,10 @@ class MedicalArticleSearchApp:
         return re.sub(r'[^a-zA-Z0-9_-]', '_', query)
 
     @staticmethod
-    def save_results_to_csv(ranked_articles, filename):
-        """Save ranked articles to a CSV file."""
-        df = pd.DataFrame(ranked_articles)
-        df.to_csv(filename, index=False)
-        print(f"\n[INFO] Results saved to {filename}")
-
-    @staticmethod
     def convert_to_csv(data):
         """Convert ranked articles to CSV format for download."""
         df = pd.DataFrame(data)
-        return df.to_csv(index=False).encode('utf-8')
+        return df.to_csv(index=False).encode('utf-8')  # No file saved, only in memory
 
     def run(self):
         """Run the Streamlit app."""
@@ -56,41 +49,32 @@ class MedicalArticleSearchApp:
         1. **Enter a medical term** in the search bar below.
         2. The system will search for **kidney-related articles**.
         3. The most relevant articles will be displayed with their **titles, journals, and links**.
-        4. **Download results as a CSV file**.
+        4. **Download results as a CSV file** (without saving it in the environment).
         """)
 
-        query = st.text_input("Enter a term")
+        query = st.text_input("Enter a medical term")
 
         if query:
             translated_query = self.translate_to_english(query)
-            cleaned_query = self.clean_filename(translated_query)  # Clean the query for filename
+            cleaned_query = self.clean_filename(translated_query)
 
-            ranked_articles = self.ranker.rank_articles(translated_query)
+            with st.spinner("Searching for relevant articles..."):
+                ranked_articles = self.ranker.rank_articles(translated_query)
 
             if ranked_articles:
-                # Print results to console
-                print("\n[INFO] Top 10 Ranked Articles:\n")
-                for i, article in enumerate(ranked_articles):
-                    print(f"[{i + 1}] Title: {article['title']}")
-                    print(f"    Journal: {article.get('journal')}")
-                    print(f"    URL: {article['url']}")
-                    print(f"    Score: {article['score']}")
-                    print("-" * 80)
+                st.success(f"Found {len(ranked_articles)} relevant articles!")
 
-                # Save results to CSV with query-based filename
-                csv_filename = f"ranked_articles_{cleaned_query}.csv"
-                self.save_results_to_csv(ranked_articles, csv_filename)
-
-                # Display articles in Streamlit
                 for article in ranked_articles:
                     st.subheader(article["title"])
                     st.write(f"**Journal**: {article['journal']}")
-                    st.write(f"**Similarity score**: {article['score']}")
-                    st.write(f"**Article link: {article['url']}**")
+                    st.write(f"**Similarity Score**: {article['score']:.4f}")
+                    st.write(f"**Matching Query Words**: {', '.join(article['matching_query_words']) if article['matching_query_words'] else 'None'}")
+                    st.write(f"**Matching Renal Keywords**: {', '.join(article['matching_renal_words']) if article['matching_renal_words'] else 'None'}")
+                    st.write(f"**[Read More]({article['url']})**")
                     st.write("---")
 
-                # Convert data to CSV and add a download button with query name
                 csv_data = self.convert_to_csv(ranked_articles)
+
                 st.download_button(
                     label="Download Results",
                     data=csv_data,
@@ -99,9 +83,9 @@ class MedicalArticleSearchApp:
                 )
 
             else:
-                st.warning("No matching articles found, please retry with an other term")
+                st.warning("No matching articles found. Please try another term.")
 
 
 if __name__ == "__main__":
-    app = MedicalArticleSearchApp()
+    app = App()
     app.run()
