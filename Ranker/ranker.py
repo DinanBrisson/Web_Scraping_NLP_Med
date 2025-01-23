@@ -28,9 +28,6 @@ class ArticleRanker:
                  input_csv="Data/pubmed_Cleaned.csv"):
         """
         Initializes the BioBERT model for text similarity evaluation.
-
-        :param model_name: Pre-trained BioBERT model name from Hugging Face.
-        :param embeddings_file: Path to precomputed embeddings file.
         """
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
         self.embeddings_file = embeddings_file
@@ -65,8 +62,8 @@ class ArticleRanker:
         df = pd.read_csv(self.input_csv)
 
         # Rename columns and convert to list of dictionaries
-        self.articles = df.rename(columns={"Title": "title", "Journal": "journal", "Original_Abstract": "abstract", "URL": "url"}).to_dict(
-            orient="records")
+        self.articles = df.rename(columns={"Title": "title", "Journal": "journal",
+                                           "Original_Abstract": "abstract", "URL": "url"}).to_dict(orient="records")
 
         print(f"[INFO] Loaded {len(self.articles)} articles.")
 
@@ -88,7 +85,7 @@ class ArticleRanker:
 
         :param translated_query: Search term already translated to English.
         :param top_n: Number of top-ranked articles to return.
-        :return: List of top-ranked articles sorted by similarity score.
+        :return: List of top-ranked articles sorted by similarity score, including matched words.
         """
         if not self.articles or self.embeddings is None:
             print("[INFO] No articles or embeddings available for analysis.")
@@ -136,13 +133,25 @@ class ArticleRanker:
             article = self.articles[idx]
             abstract = article["abstract"].lower()
 
-            if translated_query.lower() in abstract and any(keyword in abstract for keyword in renal_keywords):
+            # Find matching words from the translated query
+            query_words = set(translated_query.lower().split())
+            matching_query_words = [word for word in query_words if word in abstract]
+
+            # Find matching renal-related words
+            matching_renal_words = [kw for kw in renal_keywords if kw in abstract]
+
+            # Only add articles that match both the query and renal-related words
+            if matching_query_words and matching_renal_words:
                 ranked_articles.append({
                     "title": article["title"],
                     "abstract": article["abstract"],
                     "journal": article["journal"],
                     "url": article["url"],
-                    "score": similarities[0, idx].item()
+                    "score": similarities[0, idx].item(),
+                    "matching_query_words": matching_query_words,
+                    "num_matching_query_words": len(matching_query_words),
+                    "matching_renal_words": matching_renal_words,
+                    "num_matching_renal_words": len(matching_renal_words)
                 })
 
             if len(ranked_articles) >= top_n:
@@ -175,9 +184,11 @@ class ArticleRanker:
             print("\n[INFO] Top 10 Ranked Articles:\n")
             for i, article in enumerate(ranked_articles):
                 print(f"[{i + 1}] Title: {article['title']}")
-                print(f"    Journal: {article.get('journal')}")
-                print(f"    URL: {article['url']}")
+                print(f"    Journal: {article['journal']}")
+                print(f"    Link: {article['url']}")
                 print(f"    Score: {article['score']}")
+                print(f"    Matching Query Words: {article['matching_query_words']}")
+                print(f"    Matching Renal Words: {article['matching_renal_words']}")
                 print("-" * 80)
             self.save_results_to_csv(ranked_articles)
         else:
