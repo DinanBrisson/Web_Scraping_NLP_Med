@@ -49,7 +49,7 @@ class App:
         1. **Enter a medical term** in the search bar below.
         2. The system will search for **kidney-related articles**.
         3. The most relevant articles will be displayed with their **titles, journals, and links**.
-        4. **Download results as a CSV file** (without saving it in the environment).
+        4. **Download results as a CSV file**.
         """)
 
         query = st.text_input("Enter a medical term")
@@ -62,7 +62,7 @@ class App:
                 ranked_articles = self.ranker.rank_articles(translated_query)
 
             if ranked_articles:
-                st.success(f"Found {len(ranked_articles)} relevant articles!")
+                st.success(f"Found {len(ranked_articles)} relevant articles")
 
                 for article in ranked_articles:
                     st.subheader(article["title"])

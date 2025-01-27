@@ -24,8 +24,8 @@ class ArticleRanker:
     It utilizes BioBERT to compute semantic similarity between the user's input and article abstracts.
     """
 
-    def __init__(self, model_name="dmis-lab/biobert-base-cased-v1.1", embeddings_file="../Data/abstracts_embeddings.pt",
-                 input_csv="../Data/pubmed_Cleaned.csv"):
+    def __init__(self, model_name="dmis-lab/biobert-base-cased-v1.1", embeddings_file="Data/abstracts_embeddings.pt",
+                 input_csv="Data/pubmed_Cleaned.csv"):
         """
         Initializes the BioBERT model for text similarity evaluation.
         """

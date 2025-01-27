@@ -60,8 +60,8 @@ if __name__ == "__main__":
 
     """# Entity recognition with SciSpacy
     labeler = ScispacyLabeler()
-    input_file = "ranked_articles.csv"
-    output_file = "Labeled_Ranked_Abstracts_SciSpacy.csv"
+    input_file = "ranked_articles_cancer.csv"
+    output_file = "Labeled_Ranked_Abstracts_SciSpacy_cancer.csv"
     labeler.load_data(input_file)
     labeler.extract_entities()
     labeler.save_results(output_file)"""
