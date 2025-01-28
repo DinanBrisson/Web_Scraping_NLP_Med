@@ -210,7 +210,7 @@ class ArticleRanker:
             return np.hstack([1 - normalized_scores, normalized_scores])
 
         abstract = top_article["abstract"]
-        explanation = explainer.explain_instance(abstract, predict_proba, num_features=20, num_samples=10,
+        explanation = explainer.explain_instance(abstract, predict_proba, num_features=10, num_samples=20,
                                                  top_labels=1)
 
         # Extract word importance

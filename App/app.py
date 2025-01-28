@@ -54,6 +54,10 @@ class App:
         4. **Download results as a CSV file**.
         """)
 
+        # Initialize session state for query
+        if "query" not in st.session_state:
+            st.session_state.query = ""
+
         query = st.text_input("Enter a medical term")
 
         if query:
@@ -110,6 +114,10 @@ class App:
 
             else:
                 st.warning("No matching articles found. Please try another term.")
+
+        if st.button("Restart Search 🔄"):
+            st.session_state.query = ""  # Reset query
+            st.rerun()  # Restart the app
 
 
 if __name__ == "__main__":
