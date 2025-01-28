@@ -188,63 +188,38 @@ class ArticleRanker:
     def explain_top1_article_with_lime(self, query, top_article):
         """
         Uses LIME to explain why the top-ranked article was selected.
-        Identifies which words in the abstract contribute most to the ranking.
+        Returns the word importance scores as a DataFrame.
         """
         if not top_article or self.embeddings is None:
             print("[INFO] No ranked article available for LIME analysis.")
-            return
+            return None  # Return None if there's no explanation
 
         explainer = LimeTextExplainer(class_names=["Not Relevant", "Relevant"])
 
         def predict_proba(texts):
             """
             Computes similarity scores for LIME.
-            Returns continuous probability scores instead of binary labels.
+            Returns probability scores.
             """
             embeddings = self.model.encode(texts, convert_to_tensor=True)
             similarities = util.pytorch_cos_sim(embeddings, self.embeddings).cpu().numpy()
 
-            # Normalize scores to probability range (0 to 1)
-            min_score = similarities.min()
-            max_score = similarities.max()
-
-            if max_score - min_score == 0:  # Prevent division by zero
-                normalized_scores = np.ones((len(similarities), 1)) * 0.5
-            else:
-                normalized_scores = (similarities - min_score) / (max_score - min_score)
-
-            return np.hstack([1 - normalized_scores, normalized_scores])  # Convert to probability
+            min_score, max_score = similarities.min(), similarities.max()
+            normalized_scores = (similarities - min_score) / (
+                        max_score - min_score) if max_score > min_score else np.ones((len(similarities), 1)) * 0.5
+            return np.hstack([1 - normalized_scores, normalized_scores])
 
         abstract = top_article["abstract"]
+        explanation = explainer.explain_instance(abstract, predict_proba, num_features=20, num_samples=100,
+                                                 top_labels=1)
 
-        print(f"\n[INFO] Explaining ranking for the top-ranked article: {top_article['title']}")
-        print(f"    Score: {top_article['score']:.4f}")
-        print(f"    URL: {top_article['url']}")
+        # Extract word importance
+        top_label = explanation.top_labels[0]
+        importance_scores = explanation.as_list(label=top_label)
 
-        # Generate LIME explanation
-        explanation = explainer.explain_instance(
-            abstract,
-            predict_proba,
-            num_features=20,
-            num_samples=100,
-            top_labels=1
-        )
-
-        # Extract words & their importance scores
-        top_label = explanation.top_labels[0]  # Get the top label assigned by LIME
-        importance_scores = explanation.as_list(label=top_label)  # Get feature importance
-
-        print("\n[INFO] Words contributing to ranking:")
-        for word, score in importance_scores:
-            print(f"  {word}: {score:.4f}")
-
-        # Save word importance to CSV
+        # Convert to DataFrame
         df = pd.DataFrame(importance_scores, columns=["Word", "Importance"])
-        df.to_csv("lime_word_importance.csv", index=False)
-        print("\n[INFO] Word importance scores saved to 'lime_word_importance.csv'.")
-
-        # 🔹 Step 3: Visualize Word Importance
-        visualize_word_importance(df)
+        return df  # Return the DataFrame for Streamlit
 
     def run(self):
         """
