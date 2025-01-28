@@ -4,6 +4,8 @@ import os
 import pandas as pd
 import re
 
+from matplotlib import pyplot as plt
+
 # Add project root to Python path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
@@ -71,7 +73,31 @@ class App:
                     st.write(f"**Matching Query Words**: {', '.join(article['matching_query_words']) if article['matching_query_words'] else 'None'}")
                     st.write(f"**Matching Renal Keywords**: {', '.join(article['matching_renal_words']) if article['matching_renal_words'] else 'None'}")
                     st.write(f"**[Read More]({article['url']})**")
+
+                    # Run LIME for the top-ranked article
+                    st.subheader("LIME Explanation")
+                    with st.spinner("Generating explanation..."):
+                        lime_df = self.ranker.explain_top1_article_with_lime(translated_query, ranked_articles[0])
+
+                    if lime_df is not None:
+                        # Sort word importance by ascending order
+                        lime_df = lime_df.sort_values(by="Importance", ascending=True)
+
+                        # Define colors for the bars: Green (positive impact), Red (negative impact)
+                        colors = ["green" if x > 0 else "red" for x in lime_df["Importance"]]
+
+                        fig, ax = plt.subplots(figsize=(8, 6))
+
+                        ax.barh(lime_df["Word"], lime_df["Importance"], color=colors)
+                        ax.set_title("LIME - Word Importance")
+                        ax.set_xlabel("Importance Score")
+                        ax.set_ylabel("Word")
+                        st.pyplot(fig)
+
+                    else:
+                        st.warning("No LIME explanation available.")
                     st.write("---")
+
 
                 csv_data = self.convert_to_csv(ranked_articles)
 

@@ -28,7 +28,7 @@ def visualize_word_importance(df):
     plt.xlabel("Importance Score")
     plt.ylabel("Word")
     plt.title("LIME - Word Importance")
-    plt.gca().invert_yaxis()  # Flip the order so the most important word is on top
+    plt.gca().invert_yaxis()
     plt.show()
 
 
@@ -210,7 +210,7 @@ class ArticleRanker:
             return np.hstack([1 - normalized_scores, normalized_scores])
 
         abstract = top_article["abstract"]
-        explanation = explainer.explain_instance(abstract, predict_proba, num_features=20, num_samples=100,
+        explanation = explainer.explain_instance(abstract, predict_proba, num_features=20, num_samples=10,
                                                  top_labels=1)
 
         # Extract word importance
