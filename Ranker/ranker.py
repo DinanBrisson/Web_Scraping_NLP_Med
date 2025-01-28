@@ -1,14 +1,15 @@
+import numpy as np
 import torch
 import pandas as pd
+from matplotlib import pyplot as plt
 from sentence_transformers import SentenceTransformer, models, util
 from deep_translator import GoogleTranslator
+from lime.lime_text import LimeTextExplainer
+
 
 def translate_to_english(word):
     """
     Translates a word to English using Deep Translator with automatic language detection.
-
-    :param word: The input word to be translated.
-    :return: The translated word in English if applicable, otherwise the original word.
     """
     try:
         translated = GoogleTranslator(target="en").translate(word)  # Auto-detect language
@@ -16,6 +17,19 @@ def translate_to_english(word):
     except Exception as e:
         print(f"[WARNING] Translation failed: {e}")
         return word  # Return original word if translation fails
+
+
+def visualize_word_importance(df):
+    """
+    Plots a bar chart of the most important words for classification.
+    """
+    plt.figure(figsize=(10, 6))
+    plt.barh(df["Word"], df["Importance"], color=["green" if x > 0 else "red" for x in df["Importance"]])
+    plt.xlabel("Importance Score")
+    plt.ylabel("Word")
+    plt.title("LIME - Word Importance")
+    plt.gca().invert_yaxis()  # Flip the order so the most important word is on top
+    plt.show()
 
 
 class ArticleRanker:
@@ -48,10 +62,9 @@ class ArticleRanker:
         """
         Loads the BioBERT model in a SentenceTransformer-compatible format.
         """
-        word_embedding_model = models.Transformer(model_name)  # Load BioBERT model
+        word_embedding_model = models.Transformer(model_name)
         pooling_model = models.Pooling(word_embedding_model.get_word_embedding_dimension(),
                                        pooling_mode_mean_tokens=True)
-
         return SentenceTransformer(modules=[word_embedding_model, pooling_model])
 
     def load_articles(self):
@@ -81,11 +94,7 @@ class ArticleRanker:
 
     def rank_articles(self, translated_query, top_n=10):
         """
-        Ranks articles based on their relevance to the given input term and kidney-related topics.
-
-        :param translated_query: Search term already translated to English.
-        :param top_n: Number of top-ranked articles to return.
-        :return: List of top-ranked articles sorted by similarity score, including matched words.
+        Ranks articles based on their relevance to the given input term.
         """
         if not self.articles or self.embeddings is None:
             print("[INFO] No articles or embeddings available for analysis.")
@@ -176,14 +185,66 @@ class ArticleRanker:
 
         return ranked_articles
 
-    @staticmethod
-    def save_results_to_csv(ranked_articles, filename="ranked_articles.csv"):
+    def explain_top1_article_with_lime(self, query, top_article):
         """
-        Saves the ranked articles to a CSV file.
+        Uses LIME to explain why the top-ranked article was selected.
+        Identifies which words in the abstract contribute most to the ranking.
         """
-        df = pd.DataFrame(ranked_articles)
-        df.to_csv(filename, index=False)
-        print(f"\n[INFO] Results saved to {filename}")
+        if not top_article or self.embeddings is None:
+            print("[INFO] No ranked article available for LIME analysis.")
+            return
+
+        explainer = LimeTextExplainer(class_names=["Not Relevant", "Relevant"])
+
+        def predict_proba(texts):
+            """
+            Computes similarity scores for LIME.
+            Returns continuous probability scores instead of binary labels.
+            """
+            embeddings = self.model.encode(texts, convert_to_tensor=True)
+            similarities = util.pytorch_cos_sim(embeddings, self.embeddings).cpu().numpy()
+
+            # Normalize scores to probability range (0 to 1)
+            min_score = similarities.min()
+            max_score = similarities.max()
+
+            if max_score - min_score == 0:  # Prevent division by zero
+                normalized_scores = np.ones((len(similarities), 1)) * 0.5
+            else:
+                normalized_scores = (similarities - min_score) / (max_score - min_score)
+
+            return np.hstack([1 - normalized_scores, normalized_scores])  # Convert to probability
+
+        abstract = top_article["abstract"]
+
+        print(f"\n[INFO] Explaining ranking for the top-ranked article: {top_article['title']}")
+        print(f"    Score: {top_article['score']:.4f}")
+        print(f"    URL: {top_article['url']}")
+
+        # Generate LIME explanation
+        explanation = explainer.explain_instance(
+            abstract,
+            predict_proba,
+            num_features=20,
+            num_samples=100,
+            top_labels=1
+        )
+
+        # Extract words & their importance scores
+        top_label = explanation.top_labels[0]  # Get the top label assigned by LIME
+        importance_scores = explanation.as_list(label=top_label)  # Get feature importance
+
+        print("\n[INFO] Words contributing to ranking:")
+        for word, score in importance_scores:
+            print(f"  {word}: {score:.4f}")
+
+        # Save word importance to CSV
+        df = pd.DataFrame(importance_scores, columns=["Word", "Importance"])
+        df.to_csv("lime_word_importance.csv", index=False)
+        print("\n[INFO] Word importance scores saved to 'lime_word_importance.csv'.")
+
+        # 🔹 Step 3: Visualize Word Importance
+        visualize_word_importance(df)
 
     def run(self):
         """
@@ -191,7 +252,7 @@ class ArticleRanker:
         """
         user_input = input("Enter a search term: ")
 
-        # Translate query to English once
+        # Translate query to English
         translated_query = translate_to_english(user_input)
         print(f"[INFO] Using translated query: {translated_query}")
 
@@ -203,10 +264,14 @@ class ArticleRanker:
                 print(f"[{i + 1}] Title: {article['title']}")
                 print(f"    Journal: {article['journal']}")
                 print(f"    Link: {article['url']}")
-                print(f"    Score: {article['score']}")
+                print(f"    Score: {article['score']:.4f}")
                 print(f"    Matching Query Words: {article['matching_query_words']}")
                 print(f"    Matching Renal Words: {article['matching_renal_words']}")
                 print("-" * 80)
-            self.save_results_to_csv(ranked_articles)
+
+            # Run LIME analysis on the top-ranked article only
+            print("\n[INFO] Running LIME analysis for the top-ranked article...\n")
+            self.explain_top1_article_with_lime(translated_query, ranked_articles[0])
+
         else:
             print("\n[INFO] No matching articles found.")
