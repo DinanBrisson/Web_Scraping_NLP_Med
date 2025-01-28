@@ -1,9 +1,7 @@
-import streamlit as st
-import sys
 import os
-import pandas as pd
 import re
-
+import sys
+import streamlit as st
 from matplotlib import pyplot as plt
 
 # Add project root to Python path
@@ -32,12 +30,6 @@ class App:
         """Sanitize query to create a safe filename."""
         return re.sub(r'[^a-zA-Z0-9_-]', '_', query)
 
-    @staticmethod
-    def convert_to_csv(data):
-        """Convert ranked articles to CSV format for download."""
-        df = pd.DataFrame(data)
-        return df.to_csv(index=False).encode('utf-8')  # No file saved, only in memory
-
     def run(self):
         """Run the Streamlit app."""
         st.title("Medical Article Search")
@@ -51,16 +43,19 @@ class App:
         1. **Enter a medical term** in the search bar below.
         2. The system will search for **kidney-related articles**.
         3. The most relevant articles will be displayed with their **titles, journals, and links**.
-        4. **Download results as a CSV file**.
+        4. **Each article will have an individual LIME explanation plot**.
         """)
 
         # Initialize session state for query
         if "query" not in st.session_state:
             st.session_state.query = ""
 
-        query = st.text_input("Enter a medical term")
+        query = st.text_input("Enter a medical term", value=st.session_state.query)
 
         if query:
+            # Save query in session state
+            st.session_state.query = query
+
             translated_query = self.translate_to_english(query)
             cleaned_query = self.clean_filename(translated_query)
 
@@ -70,18 +65,18 @@ class App:
             if ranked_articles:
                 st.success(f"Found {len(ranked_articles)} relevant articles")
 
-                for article in ranked_articles:
-                    st.subheader(article["title"])
+                for index, article in enumerate(ranked_articles):
+                    st.subheader(f"**{index+1}. {article['title']}**")
                     st.write(f"**Journal**: {article['journal']}")
                     st.write(f"**Similarity Score**: {article['score']:.4f}")
                     st.write(f"**Matching Query Words**: {', '.join(article['matching_query_words']) if article['matching_query_words'] else 'None'}")
                     st.write(f"**Matching Renal Keywords**: {', '.join(article['matching_renal_words']) if article['matching_renal_words'] else 'None'}")
                     st.write(f"**[Read More]({article['url']})**")
 
-                    # Run LIME for the top-ranked article
-                    st.subheader("LIME Explanation")
+                    # Run LIME explanation for each article
+                    st.subheader(f"LIME Explanation for Article {index+1}")
                     with st.spinner("Generating explanation..."):
-                        lime_df = self.ranker.explain_top1_article_with_lime(translated_query, ranked_articles[0])
+                        lime_df = self.ranker.lime_explainer(translated_query, article)
 
                     if lime_df is not None:
                         # Sort word importance by ascending order
@@ -93,31 +88,18 @@ class App:
                         fig, ax = plt.subplots(figsize=(8, 6))
 
                         ax.barh(lime_df["Word"], lime_df["Importance"], color=colors)
-                        ax.set_title("LIME - Word Importance")
+                        ax.set_title(f"LIME - Word Importance for Article {index+1}")
                         ax.set_xlabel("Importance Score")
                         ax.set_ylabel("Word")
                         st.pyplot(fig)
 
                     else:
-                        st.warning("No LIME explanation available.")
+                        st.warning(f"No LIME explanation available for article {index+1}")
+
                     st.write("---")
-
-
-                csv_data = self.convert_to_csv(ranked_articles)
-
-                st.download_button(
-                    label="Download Results",
-                    data=csv_data,
-                    file_name=f"ranked_articles_{cleaned_query}.csv",
-                    mime="text/csv"
-                )
 
             else:
                 st.warning("No matching articles found. Please try another term.")
-
-        if st.button("Restart Search 🔄"):
-            st.session_state.query = ""  # Reset query
-            st.rerun()  # Restart the app
 
 
 if __name__ == "__main__":

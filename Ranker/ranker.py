@@ -1,10 +1,11 @@
-import numpy as np
 import torch
+import numpy as np
 import pandas as pd
+import streamlit as st
 from matplotlib import pyplot as plt
-from sentence_transformers import SentenceTransformer, models, util
 from deep_translator import GoogleTranslator
 from lime.lime_text import LimeTextExplainer
+from sentence_transformers import SentenceTransformer, models, util
 
 
 def translate_to_english(word):
@@ -31,6 +32,36 @@ def visualize_word_importance(df):
     plt.gca().invert_yaxis()
     plt.show()
 
+@st.cache_resource
+def load_biobert(model_name="dmis-lab/biobert-base-cased-v1.1"):
+    """
+    Loads the BioBERT model and caches it to prevent reloading.
+    """
+    print("[INFO] Loading BioBERT model...")
+    word_embedding_model = models.Transformer(model_name)
+    pooling_model = models.Pooling(word_embedding_model.get_word_embedding_dimension(),
+                                   pooling_mode_mean_tokens=True)
+    return SentenceTransformer(modules=[word_embedding_model, pooling_model])
+
+
+@st.cache_resource
+def load_data(input_csv="Data/pubmed_Cleaned.csv", embeddings_file="Data/abstracts_embeddings.pt"):
+    """
+    Loads articles and precomputed embeddings and caches them.
+    """
+    print("[INFO] Loading articles from CSV...")
+    df = pd.read_csv(input_csv)
+    articles = df.rename(
+        columns={"Title": "title", "Journal": "journal", "Original_Abstract": "abstract", "URL": "url"}).to_dict(
+        orient="records")
+    print(f"[INFO] Loaded {len(articles)} articles.")
+
+    print("[INFO] Loading precomputed embeddings...")
+    embeddings = torch.load(embeddings_file)
+    print(f"[INFO] Loaded precomputed embeddings: {embeddings.shape}")
+
+    return articles, embeddings
+
 
 class ArticleRanker:
     """
@@ -38,59 +69,18 @@ class ArticleRanker:
     It utilizes BioBERT to compute semantic similarity between the user's input and article abstracts.
     """
 
-    def __init__(self, model_name="dmis-lab/biobert-base-cased-v1.1", embeddings_file="Data/abstracts_embeddings.pt",
-                 input_csv="Data/pubmed_Cleaned.csv"):
+    def __init__(self):
         """
         Initializes the BioBERT model for text similarity evaluation.
         """
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
-        self.embeddings_file = embeddings_file
-        self.input_csv = input_csv
         self.articles = []
         self.embeddings = None
 
-        # Load BioBERT model
-        print("[INFO] Loading BioBERT model...")
-        self.model = self.load_biobert(model_name)
+        # Load cached BioBERT model and data
+        self.model = load_biobert()
+        self.articles, self.embeddings = load_data()
 
-        # Load articles and precomputed embeddings
-        self.load_articles()
-        self.load_precomputed_embeddings()
-
-    @staticmethod
-    def load_biobert(model_name):
-        """
-        Loads the BioBERT model in a SentenceTransformer-compatible format.
-        """
-        word_embedding_model = models.Transformer(model_name)
-        pooling_model = models.Pooling(word_embedding_model.get_word_embedding_dimension(),
-                                       pooling_mode_mean_tokens=True)
-        return SentenceTransformer(modules=[word_embedding_model, pooling_model])
-
-    def load_articles(self):
-        """
-        Loads articles from the CSV file and stores them in self.articles.
-        """
-        print("[INFO] Loading articles from CSV...")
-        df = pd.read_csv(self.input_csv)
-
-        # Rename columns and convert to list of dictionaries
-        self.articles = df.rename(columns={"Title": "title", "Journal": "journal",
-                                           "Original_Abstract": "abstract", "URL": "url"}).to_dict(orient="records")
-
-        print(f"[INFO] Loaded {len(self.articles)} articles.")
-
-    def load_precomputed_embeddings(self):
-        """
-        Loads precomputed embeddings from a file.
-        """
-        print("[INFO] Loading precomputed embeddings")
-        try:
-            self.embeddings = torch.load(self.embeddings_file)
-            print(f"[INFO] Loaded precomputed embeddings: {self.embeddings.shape}")
-        except FileNotFoundError:
-            print("[ERROR] No precomputed embeddings found")
-            exit()
 
     def rank_articles(self, translated_query, top_n=10):
         """
@@ -185,7 +175,7 @@ class ArticleRanker:
 
         return ranked_articles
 
-    def explain_top1_article_with_lime(self, query, top_article):
+    def lime_explainer(self, query, top_article):
         """
         Uses LIME to explain why the top-ranked article was selected.
         Returns the word importance scores as a DataFrame.
@@ -246,7 +236,7 @@ class ArticleRanker:
 
             # Run LIME analysis on the top-ranked article only
             print("\n[INFO] Running LIME analysis for the top-ranked article...\n")
-            self.explain_top1_article_with_lime(translated_query, ranked_articles[0])
+            self.lime_explainer(translated_query, ranked_articles[0])
 
         else:
             print("\n[INFO] No matching articles found.")
