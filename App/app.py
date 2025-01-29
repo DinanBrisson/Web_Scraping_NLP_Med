@@ -1,6 +1,7 @@
 import os
 import re
 import sys
+import pandas as pd
 import streamlit as st
 from matplotlib import pyplot as plt
 
@@ -43,7 +44,8 @@ class App:
         1. **Enter a medical term** in the search bar below.
         2. The system will search for **kidney-related articles**.
         3. The most relevant articles will be displayed with their **titles, journals, and links**.
-        4. **You can choose an article to have an individual LIME explanation**.
+        4. **Download the articles as a CSV file**.
+        5. **You can choose an article to have an individual LIME explanation**.
         """)
 
         # Initialize session state for query if not exists
@@ -73,17 +75,26 @@ class App:
             if ranked_articles:
                 st.success(f"Found {len(ranked_articles)} relevant articles")
 
+                # Convert articles to DataFrame for CSV export
+                articles_df = pd.DataFrame(ranked_articles)[["title", "journal", "score", "url"]]
+
                 # Display ALL articles first
                 for index, article in enumerate(ranked_articles):
                     st.subheader(f"**{index + 1}. {article['title']}**")
                     st.write(f"**Journal**: {article['journal']}")
                     st.write(f"**Similarity Score**: {article['score']:.4f}")
-                    st.write(
-                        f"**Matching Query Words**: {', '.join(article['matching_query_words']) if article['matching_query_words'] else 'None'}")
-                    st.write(
-                        f"**Matching Renal Keywords**: {', '.join(article['matching_renal_words']) if article['matching_renal_words'] else 'None'}")
+                    st.write(f"**Matching Query Words**: {', '.join(article['matching_query_words']) if article['matching_query_words'] else 'None'}")
+                    st.write(f"**Matching Renal Keywords**: {', '.join(article['matching_renal_words']) if article['matching_renal_words'] else 'None'}")
                     st.write(f"**[Read More]({article['url']})**")
                     st.write("---")
+
+                # Add a download button for articles CSV
+                st.download_button(
+                    label="Download Articles",
+                    data=articles_df.to_csv(index=False).encode("utf-8"),
+                    file_name=f"Articles_{st.session_state.query.replace(' ', '_')}.csv",
+                    mime="text/csv",
+                )
 
                 # Dropdown to select an article for LIME explanation
                 st.subheader("Select an article for LIME Explanation")
@@ -98,10 +109,6 @@ class App:
                     st.subheader(f"Selected Article: {selected_article['title']}")
                     st.write(f"**Journal**: {selected_article['journal']}")
                     st.write(f"**Similarity Score**: {selected_article['score']:.4f}")
-                    st.write(
-                        f"**Matching Query Words**: {', '.join(selected_article['matching_query_words']) if selected_article['matching_query_words'] else 'None'}")
-                    st.write(
-                        f"**Matching Renal Keywords**: {', '.join(selected_article['matching_renal_words']) if selected_article['matching_renal_words'] else 'None'}")
                     st.write(f"**[Read More]({selected_article['url']})**")
 
                     # Generate LIME explanation **only after selection**
