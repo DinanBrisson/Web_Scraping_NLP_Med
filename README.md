@@ -44,5 +44,6 @@ streamlit run App/app.py
 ## Author
 
 - Dinan Brisson, ISEN
+  Github : https://github.com/DinanBrisson
   dinan.brisson@isen-ouest.yncrea.fr
 
