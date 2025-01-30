@@ -1,1 +1,1 @@
-from .ranker import ArticleRanker
+from .ranker_app import ArticleRanker

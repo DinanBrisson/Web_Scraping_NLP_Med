@@ -8,7 +8,7 @@ from matplotlib import pyplot as plt
 # Add project root to Python path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from Ranker.ranker import ArticleRanker
+from Ranker.ranker_app import ArticleRanker
 from deep_translator import GoogleTranslator
 
 
