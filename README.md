@@ -42,8 +42,6 @@ A user interface was developed using Streamlit to interact with the results.
 
 git clone https://github.com/DinanBrisson/Projet_M2.git
 
-cd Projet_M2
-
 pip install -r requirements.txt
 
 streamlit run App/app.py
