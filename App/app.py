@@ -33,7 +33,7 @@ class App:
 
     def run(self):
         """Run the Streamlit app."""
-        st.title("Medical Article Search")
+        st.title("Renal Article Ranker")
 
         # Add a description of the app
         st.write("""
