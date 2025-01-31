@@ -98,6 +98,10 @@ class App:
 
                 # Dropdown to select an article for LIME explanation
                 st.subheader("Select an article for LIME Explanation")
+                st.warning("LIME explain the score by provides which words was the most important, it locally "
+                           "perturbing the text and compare each. However, due to time constraints, the explanation "
+                           "may not fully capture the global model behavior. Only 500 perturbations here,"
+                           "to have a stable explanation 5000 are good but it's take ≈30 minutes depending of your machine.")
                 article_titles = [f"{index + 1}. {article['title']}" for index, article in enumerate(ranked_articles)]
 
                 if article_titles:
