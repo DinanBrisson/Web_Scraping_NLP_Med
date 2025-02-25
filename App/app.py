@@ -59,7 +59,7 @@ class App:
         query = st.text_input("Enter a medical term", value=st.session_state.query)
 
         # Search button to submit query
-        if st.button("Search 🔍"):
+        if st.button("Search"):
             if query != st.session_state.query:
                 st.session_state.query = query  # Store new query
                 st.session_state.search_triggered = True
@@ -90,7 +90,7 @@ class App:
 
                 # Add a download button for articles CSV
                 st.download_button(
-                    label="Download Articles",
+                    label="Download top 10",
                     data=articles_df.to_csv(index=False).encode("utf-8"),
                     file_name=f"Articles_{st.session_state.query.replace(' ', '_')}.csv",
                     mime="text/csv",

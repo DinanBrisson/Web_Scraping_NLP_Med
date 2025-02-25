@@ -97,6 +97,6 @@ if __name__ == "__main__":
     """scraper = JournalImpactFactorScraper(delay=1)
     scraper.run()"""
 
-    # Rank articles
+    """# Rank articles
     ranker = ArticleRanker()
-    ranker.run()
+    ranker.run()"""
