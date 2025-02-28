@@ -45,7 +45,7 @@ def load_biobert(model_name="dmis-lab/biobert-base-cased-v1.1"):
 
 
 @st.cache_resource
-def load_data(input_csv="Data/pubmed_Cleaned.csv", embeddings_file="Data/abstracts_embeddings.pt"):
+def load_data(input_csv="Data/pubmed_Cleaned.csv", embeddings_file="Data/abstracts_embeddings_attention_3.pt"):
     """
     Loads articles and precomputed embeddings and caches them.
     """
