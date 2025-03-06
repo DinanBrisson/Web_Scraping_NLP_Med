@@ -1,7 +1,6 @@
 import json
 import pandas as pd
 from Ranker.encoder import EncodeAbstracts
-from Ranker.ranker import ArticleRanker
 from Scraper.impact_factor_scraper import JournalImpactFactorScraper
 from Scraper.scraper import PubMedScraper, save_to_json, json_to_csv
 from Preprocessor.preprocessor import TextCleaner, check_and_download_nltk_resources
