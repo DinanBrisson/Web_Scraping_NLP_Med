@@ -1,17 +1,13 @@
 import json
-import pandas as pd
+
+from Ranker import ArticleRanker
 from Ranker.encoder import EncodeAbstracts
-from Scraper.impact_factor_scraper import JournalImpactFactorScraper
 from Scraper.scraper import PubMedScraper, save_to_json, json_to_csv
 from Preprocessor.preprocessor import TextCleaner, check_and_download_nltk_resources
-from Preprocessor.vectorizer import TextVectorizer, save_to_csv
-from Labeler.biobert_labeler import BioBERTLabeler
-from Labeler.scispacy_labeler import ScispacyLabeler
-from Filter.filter import SpacyFilter
+
 
 if __name__ == "__main__":
 
-    """
     url = "https://pubmed.ncbi.nlm.nih.gov/?term=%28%22kidney+injury%22+OR+%22renal+toxicity%22+OR+%22nephrotoxicity%22%29+AND+%28%22drug+therapy%22+OR+medication+OR+pharmacotherapy+OR+%22nephrotoxic+drugs+»%29&filter=datesearch.y_10&filter=simsearch1.fha&filter=pubt.clinicaltrial&filter=pubt.randomizedcontrolledtrial&filter=lang.english&filter=hum_ani.humans"
 
     # Initialize scraper
@@ -26,7 +22,7 @@ if __name__ == "__main__":
     # Check and download if necessary
     check_and_download_nltk_resources()
     
-    Load JSON data
+    # Load JSON data
     with open("pubmed_scrap.json", "r", encoding="utf-8") as file:
         articles_data = json.load(file)
 
@@ -44,20 +40,9 @@ if __name__ == "__main__":
     
         # Encoding abstracts
     preprocessor = EncodeAbstracts()
-    preprocessor.encode_and_save()
-
-    # Get user input
-    user_input = filter_spacy.get_user_input()
-
-    # Apply Filter
-    filtered_data = filter_spacy.pre_filter(user_input)
-
-    # Save results
-    output_file = "Filtered_Abstracts.csv"
-    filter_spacy.save_results(filtered_data, output_file)
+    preprocessor.encode_abstracts()
 
     # Rank articles
     ranker = ArticleRanker()
     ranker.run()
-    
-    """
+
