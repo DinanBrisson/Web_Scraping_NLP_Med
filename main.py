@@ -25,9 +25,7 @@ if __name__ == "__main__":
 
     # Check and download if necessary
     check_and_download_nltk_resources()
-    """
-
-    """
+    
     Load JSON data
     with open("pubmed_scrap.json", "r", encoding="utf-8") as file:
         articles_data = json.load(file)
@@ -43,41 +41,10 @@ if __name__ == "__main__":
     save_to_json(cleaned_data, "pubmed_Cleaned.json")
 
     json_to_csv("pubmed_Cleaned.json", "pubmed_Cleaned.csv")
-    """
-
-    """
-    # Initialize Vectorizer and transform data
-    vectorizer = TextVectorizer()
-    bow_matrix = vectorizer.fit_transform_bow(cleaned_texts)
-    tfidf_matrix = vectorizer.fit_transform_tfidf(cleaned_texts)
-
-    print("Bag of Words matrix shape:", bow_matrix.shape)
-    save_to_csv(bow_matrix, vectorizer.vectorizer_bow.get_feature_names_out(), "BOW.csv")
-    print("TF-IDF matrix shape:", tfidf_matrix.shape)
-    save_to_csv(tfidf_matrix, vectorizer.vectorizer_tfidf.get_feature_names_out(), "TF-IDF.csv")
-    """
-
-    """# Entity recognition with SciSpacy
-    labeler = ScispacyLabeler()
-    input_file = "ranked_articles_cancer.csv"
-    output_file = "Labeled_Ranked_Abstracts_SciSpacy_cancer.csv"
-    labeler.load_data(input_file)
-    labeler.extract_entities()
-    labeler.save_results(output_file)"""
-
-    """# Entity recognition with BioBERT
-    labeler = BioBERTLabeler()
-    input_file = "ranked_articles.csv"
-    output_file = "Labeled_Ranked_Abstracts_BioBERT.csv"
-    labeler.load_data(input_file, text_column="abstract")
-    labeler.extract_entities()
-    labeler.save_results(output_file)"""
-
-    """# Initialize Filter
-    filter_spacy = SpacyFilter(similarity_threshold=0.8)
-
-    input_file = "Labeled_Abstracts_SciSpacy.csv"
-    filter_spacy.load_data(input_file)
+    
+        # Encoding abstracts
+    preprocessor = EncodeAbstracts()
+    preprocessor.encode_and_save()
 
     # Get user input
     user_input = filter_spacy.get_user_input()
@@ -87,15 +54,10 @@ if __name__ == "__main__":
 
     # Save results
     output_file = "Filtered_Abstracts.csv"
-    filter_spacy.save_results(filtered_data, output_file)"""
+    filter_spacy.save_results(filtered_data, output_file)
 
-    """# Encoding abstracts
-    preprocessor = EncodeAbstracts()
-    preprocessor.encode_and_save()"""
-
-    """scraper = JournalImpactFactorScraper(delay=1)
-    scraper.run()"""
-
-    """# Rank articles
+    # Rank articles
     ranker = ArticleRanker()
-    ranker.run()"""
+    ranker.run()
+    
+    """
