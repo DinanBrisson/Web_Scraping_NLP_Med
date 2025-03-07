@@ -1,5 +1,4 @@
 import json
-
 from Ranker import ArticleRanker
 from Ranker.encoder import EncodeAbstracts
 from Scraper.scraper import PubMedScraper, save_to_json, json_to_csv
@@ -15,9 +14,6 @@ if __name__ == "__main__":
     scraper.url = url
     articles_data = scraper.scrape_articles()
     save_to_json(articles_data, "pubmed_scrap.json")
-    # json_to_csv("pubmed_scrap.json", "pubmed_scrap.csv")
-    article  = [article["Abstract"] for article in articles_data]
-    save_to_json(article, "Abstracts.json")
 
     # Check and download if necessary
     check_and_download_nltk_resources()
@@ -31,8 +27,6 @@ if __name__ == "__main__":
     cleaned_data = preprocessor.preprocess(articles_data)
 
     cleaned_texts = [article["Original_Abstract"] for article in cleaned_data]
-
-    save_to_json(cleaned_texts, "Cleaned_Abstracts.json")
 
     save_to_json(cleaned_data, "pubmed_Cleaned.json")
 
